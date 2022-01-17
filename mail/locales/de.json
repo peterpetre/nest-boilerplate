@@ -1,0 +1,19 @@
+{
+  "hi": "Hi %s!",
+  "hello": "Hallo!",
+  "helloWithName": "Hallo %s,",
+  "hey": "Hey %s!",
+  "dear": "Sehr geehrte Damen und Herren,",
+  "cheers": "Prost 🍾",
+  "seeYouSoon": "Bis bald!",
+  "greetings": "Grüße,",
+  "seeYouOverThere": "Wir sehen uns drüben!",
+  "best": "Beste Grüße,",
+  "yourTeam": "Dein Team",
+  "theTeam": "das Team",
+  "link": "Link",
+  "regards": "Mit freundlichen Grüßen",
+  "thanks": "Danke schön!",
+  "welcomeSubject": "Willkommen!",
+  "welcomeText": "Vielen Dank, dass Sie sich bei uns angemeldet haben."
+}
