@@ -58,6 +58,8 @@ export class AuthController {
     )
   }
 
+  // TODO: validate / authenticate
+
   @ApiOperation({ summary: 'Change your password' })
   @ApiResponse({
     status: 201,

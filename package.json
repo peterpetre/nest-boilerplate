@@ -10,7 +10,7 @@
     "build": "nest build",
     "format": "prettier --ignore-path .gitignore --write --ignore-unknown .",
     "prestart:issue": "npm run prebuild && npm run format && npm run start:docker && npm run bump:db-migrations",
-    "prestart": "npm run prebuild && npm run format && npm run start:docker",
+    "prestart": "npm run prebuild && npm run format && npm run start:docker && npm run update:db-migrations",
     "start": "cross-env NODE_ENV=development nest start",
     "start:dev": "npm run prestart && cross-env NODE_ENV=development nest start --watch",
     "start:debug": "npm run prestart && cross-env NODE_ENV=development nest start --debug --watch",
