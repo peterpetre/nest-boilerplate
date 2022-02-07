@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
 import { MikroOrmModule } from '@mikro-orm/nestjs'
-import { ExampleEntity } from './entities/example.entity'
+import { Example } from './entities/example.entity'
 import { ExamplesController } from './examples.controller'
 import { ExamplesService } from './examples.service'
 
@@ -11,7 +11,7 @@ export * from './entities/example.entity'
 export * from './examples.service'
 
 @Module({
-  imports: [MikroOrmModule.forFeature([ExampleEntity])],
+  imports: [MikroOrmModule.forFeature([Example])],
   controllers: [ExamplesController],
   providers: [ExamplesService],
   exports: [ExamplesService]

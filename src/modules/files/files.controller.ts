@@ -23,7 +23,7 @@ import { handleResponse } from '@/handlers/response.handler'
 import { Required } from '@/decorators/required.decorator'
 import { FilesService } from './files.service'
 import { RenameFileDto } from './dto/rename-file.dto'
-import { FileEntity } from './entities/file.entity'
+import { File } from './entities/file.entity'
 
 @ApiTags('files')
 @Controller('files')
@@ -49,7 +49,7 @@ export class FilesController {
   @ApiResponse({
     status: 201,
     description: 'The files have been successfully uploaded',
-    type: [FileEntity]
+    type: [File]
   })
   @ApiResponseCommon()
   @Post('multiple')
@@ -80,7 +80,7 @@ export class FilesController {
   @ApiResponse({
     status: 201,
     description: 'The file has been successfully uploaded',
-    type: FileEntity
+    type: File
   })
   @ApiResponseCommon()
   @Post('single')
@@ -95,7 +95,7 @@ export class FilesController {
   @ApiResponse({
     status: 200,
     description: 'Return all files',
-    type: [FileEntity]
+    type: [File]
   })
   @ApiResponseCommon()
   @Get()
@@ -107,7 +107,7 @@ export class FilesController {
   @ApiResponse({
     status: 200,
     description: 'Return the file',
-    type: FileEntity
+    type: File
   })
   @ApiResponseCommon()
   @Get(':id')
@@ -119,7 +119,7 @@ export class FilesController {
   @ApiResponse({
     status: 201,
     description: 'The file has been successfully renamed',
-    type: FileEntity
+    type: File
   })
   @ApiResponseCommon()
   @Patch('rename/:id')
@@ -131,7 +131,7 @@ export class FilesController {
   @ApiResponse({
     status: 201,
     description: 'The file has been successfully removed',
-    type: FileEntity
+    type: File
   })
   @ApiResponseCommon()
   @Delete(':id')

@@ -32,6 +32,10 @@ export class EnvironmentVariables {
   @IsString()
   DB_HOST = 'localhost'
 
+  @Type(() => Number)
+  @IsNumber()
+  DB_PORT = 3306
+
   @Type(() => String)
   @IsString()
   DB_USERNAME = 'root'
@@ -46,11 +50,27 @@ export class EnvironmentVariables {
 
   @Type(() => String)
   @IsString()
-  JWT_SECRET_KEY = 'SECRET'
+  ACCESS_TOKEN_SECRET = 'SECRET_ACCESS'
 
-  @Type(() => Number)
-  @IsNumber()
-  JWT_EXPIRES_IN = 3600
+  @Type(() => String)
+  @IsString()
+  ACCESS_TOKEN_EXPIRATION = '15m'
+
+  @Type(() => String)
+  @IsString()
+  REFRESH_TOKEN_SECRET = 'SECRET_REFRESH'
+
+  @Type(() => String)
+  @IsString()
+  REFRESH_TOKEN_EXPIRATION = '7d'
+
+  @Type(() => String)
+  @IsString()
+  PASSWORD_RESET_TOKEN_SECRET = 'SECRET_PASSWORD_RESET'
+
+  @Type(() => String)
+  @IsString()
+  PASSWORD_RESET_TOKEN_EXPIRATION = '30m'
 
   @Type(() => String)
   @IsEmail()
@@ -59,6 +79,10 @@ export class EnvironmentVariables {
   @Type(() => String)
   @IsEmail()
   MAIL_FROM = 'noreply@example.com'
+
+  @Type(() => Number)
+  @IsNumber()
+  UPLOAD_MAX_FILESIZE = 10485760 // 10MB
 }
 
 export const DefaultConfig = new EnvironmentVariables()

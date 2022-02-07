@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { MikroORM } from '@mikro-orm/core'
 import { MikroOrmModule } from '@mikro-orm/nestjs'
 import config from '@/mikro-orm.config'
-import { UserEntity } from './entities/user.entity'
+import { User } from './entities/user.entity'
 import { UsersService } from './users.service'
 
 describe('UsersService', () => {
@@ -13,7 +13,7 @@ describe('UsersService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         MikroOrmModule.forRoot(config),
-        MikroOrmModule.forFeature({ entities: [UserEntity] })
+        MikroOrmModule.forFeature({ entities: [User] })
       ],
       providers: [UsersService]
     }).compile()

@@ -13,7 +13,7 @@ import { handleResponse } from '@/handlers/response.handler'
 import { AuthGuard } from '@/guards/auth.guard'
 import { Role } from '@/common/user.common'
 import { UsersService } from './users.service'
-import { UserEntity } from './entities/user.entity'
+import { User } from './entities/user.entity'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 
@@ -26,7 +26,7 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'The user has been successfully created',
-    type: UserEntity
+    type: User
   })
   @ApiResponseCommon()
   @Post()
@@ -39,11 +39,11 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Return all users.',
-    type: [UserEntity]
+    type: [User]
   })
   @ApiResponseCommon()
   @Get()
-  @AuthGuard(Role.User)
+  @AuthGuard(Role.Admin, Role.User)
   findAll() {
     return handleResponse(() => this.usersService.findAll())
   }
@@ -52,11 +52,11 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Return the user.',
-    type: UserEntity
+    type: User
   })
   @ApiResponseCommon()
   @Get(':id')
-  @AuthGuard(Role.User)
+  @AuthGuard(Role.Admin, Role.User)
   findOne(@Param('id') id: number) {
     return handleResponse(() => this.usersService.findOne(id))
   }
@@ -65,7 +65,7 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'The user has been successfully updated',
-    type: UserEntity
+    type: User
   })
   @ApiResponseCommon()
   @Patch(':id')
@@ -78,7 +78,7 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'The user has been successfully removed',
-    type: UserEntity
+    type: User
   })
   @ApiResponseCommon()
   @Delete(':id')

@@ -9,8 +9,8 @@ import { ConfigModule } from './config.module'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        ttl: configService.get('THROTTLE_TTL') || 60,
-        limit: configService.get('THROTTLE_LIMIT') || 10
+        ttl: configService.get('THROTTLE_TTL'),
+        limit: configService.get('THROTTLE_LIMIT')
       })
     })
   ]

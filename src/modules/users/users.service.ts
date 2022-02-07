@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { wrap } from '@mikro-orm/core'
+import bcrypt from 'bcrypt'
 import { UserRepository } from './entities/user.entity'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
@@ -23,6 +24,8 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     try {
       const user = this.userRepository.create(createUserDto)
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10)
+      wrap(user).assign({ hashedPassword })
       await this.userRepository.persistAndFlush(user)
       return user
     } catch (err) {

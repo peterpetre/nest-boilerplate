@@ -4,7 +4,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs'
 import config from '@/mikro-orm.config'
 import { PassportModule } from '@/configs/passport.module'
 // import { createExample } from './common/create-example'
-import { UserEntity } from './entities/user.entity'
+import { User } from './entities/user.entity'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 
@@ -17,7 +17,7 @@ describe('AuthController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         MikroOrmModule.forRoot(config),
-        MikroOrmModule.forFeature({ entities: [UserEntity] }),
+        MikroOrmModule.forFeature({ entities: [User] }),
         PassportModule
       ],
       controllers: [AuthController],

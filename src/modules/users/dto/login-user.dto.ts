@@ -1,6 +1,6 @@
 import { EmailProperty, PasswordProperty } from '../entities/user.entity'
 
-export class SignInDto {
+export class LoginUserDto {
   @EmailProperty()
   email: string
 

@@ -5,7 +5,7 @@ import config from '@/mikro-orm.config'
 import { HttpModule } from '@/configs/http.module'
 import { MailModule } from '@/configs/mail.module'
 import { createExample } from './common/create-example'
-import { ExampleEntity } from './entities/example.entity'
+import { Example } from './entities/example.entity'
 import { ExamplesService } from './examples.service'
 
 describe('ExamplesService', () => {
@@ -17,7 +17,7 @@ describe('ExamplesService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         MikroOrmModule.forRoot(config),
-        MikroOrmModule.forFeature({ entities: [ExampleEntity] }),
+        MikroOrmModule.forFeature({ entities: [Example] }),
         HttpModule,
         MailModule
       ],
@@ -55,7 +55,7 @@ describe('ExamplesService', () => {
 
   describe('findAll', () => {
     it('should return an array of examples', async () => {
-      const examples: ExampleEntity[] = []
+      const examples: Example[] = []
       examples.push(createExample(1, 'Alice'))
       examples.push(createExample(2, 'Bob'))
 

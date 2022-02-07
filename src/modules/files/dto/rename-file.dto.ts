@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { Type } from 'class-transformer'
+// import { Type } from 'class-transformer'
 import { IsString, IsNotEmpty } from 'class-validator'
 
 export class RenameFileDto {
@@ -7,7 +7,7 @@ export class RenameFileDto {
     description: 'The new name of the file',
     example: 'example'
   })
-  @Type(() => String)
+  // @Type(() => String)
   @IsString()
   @IsNotEmpty()
   name: string

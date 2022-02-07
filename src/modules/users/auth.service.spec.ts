@@ -3,7 +3,7 @@ import { MikroORM } from '@mikro-orm/core'
 import { MikroOrmModule } from '@mikro-orm/nestjs'
 import config from '@/mikro-orm.config'
 import { PassportModule } from '@/configs/passport.module'
-import { UserEntity } from './entities/user.entity'
+import { User } from './entities/user.entity'
 import { AuthService } from './auth.service'
 
 describe('AuthService', () => {
@@ -14,7 +14,7 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         MikroOrmModule.forRoot(config),
-        MikroOrmModule.forFeature({ entities: [UserEntity] }),
+        MikroOrmModule.forFeature({ entities: [User] }),
         PassportModule
       ],
       providers: [AuthService]

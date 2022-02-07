@@ -1,4 +1,9 @@
-import { Global, Injectable, Module } from '@nestjs/common'
+import {
+  Global,
+  Injectable,
+  Module
+  // UnauthorizedException
+} from '@nestjs/common'
 import {
   PassportModule as NestPassportModule,
   PassportStrategy
@@ -6,26 +11,30 @@ import {
 import { JwtModule } from '@nestjs/jwt'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import { ConfigService } from '@nestjs/config'
+import { UsersModule } from '@/modules/users/users.module'
+import { UsersService } from '@/modules/users/users.service'
+import { DefaultConfig } from '@/default.config'
 import { ConfigModule } from './config.module'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly usersService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET_KEY || 'SECRET'
+      secretOrKey:
+        process.env.ACCESS_TOKEN_SECRET || DefaultConfig.ACCESS_TOKEN_SECRET
     })
   }
 
   async validate(payload: any) {
-    // CHECK: hit database or not? think about refresh token architecture
-    // const user = await this.usersService.findOne(payload.id)
+    // const user = await this.usersService.findOne(payload.sub)
     // if (!user) {
-    //   throw new UnauthorizedException('Invalid token')
+    //   throw new UnauthorizedException('The access token is invalid')
     // }
     // return user
-    return { id: payload.sub, email: payload.iss, roles: payload.roles }
+    // NOTE: keep it stateless for now
+    return { id: payload.sub, email: payload.email, roles: payload.roles }
   }
 }
 
@@ -33,6 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 @Module({
   imports: [
     ConfigModule,
+    UsersModule,
     NestPassportModule.register({
       defaultStrategy: 'jwt',
       property: 'user',
@@ -42,9 +52,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET_KEY') || 'SECRET',
+        secret: configService.get('ACCESS_TOKEN_SECRET'),
         signOptions: {
-          expiresIn: configService.get('JWT_EXPIRES_IN') || 3600
+          expiresIn: configService.get('ACCESS_TOKEN_EXPIRATION')
         }
       })
     })

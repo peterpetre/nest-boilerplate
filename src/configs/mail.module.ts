@@ -14,7 +14,7 @@ export class MailService {
   private readonly smtpOptions: any
 
   constructor(private readonly configService: ConfigService) {
-    this.mailFrom = configService.get('MAIL_FROM') || 'noreply@example.com'
+    this.mailFrom = configService.get('MAIL_FROM')
     this.preview = configService.get('IS_DEVELOPMENT')
     this.send =
       configService.get('IS_PRODUCTION') &&

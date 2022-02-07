@@ -1,70 +1,121 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import {
+  Injectable,
+  BadRequestException,
+  UnprocessableEntityException
+} from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
+import { TokenExpiredError } from 'jsonwebtoken'
 import { wrap } from '@mikro-orm/core'
 import bcrypt from 'bcrypt'
-import { UserRepository, UserEntity } from './entities/user.entity'
-import { SignUpDto } from './dto/sign-up.dto'
-import { SignInDto } from './dto/sign-in.dto'
+import { UserRepository, User } from './entities/user.entity'
+import { RegisterUserDto } from './dto/register-user.dto'
+import { LoginUserDto } from './dto/login-user.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
+import { ForgotPasswordDto } from './dto/forgot-password.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly configService: ConfigService,
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService
   ) {}
 
-  // CHECK: https://www.c-sharpcorner.com/article/accesstoken-vs-id-token-vs-refresh-token-what-whywhen/
-  createAccessToken(user: UserEntity) {
-    const payload = { sub: user.id, iss: user.email, roles: user.roles }
-    // jti = uuid.v4()
+  createAccessToken(user: User) {
+    const payload = { sub: user.id, email: user.email, roles: user.roles }
     const accessToken = this.jwtService.sign(payload)
-    // expiresIn: process.env.JWT_EXPIRES_IN
     return accessToken
   }
 
-  // TODO:
-  createRefreshToken(user: UserEntity) {
-    const payload = { sub: user.id, iss: user.email, roles: user.roles }
-    const refreshToken = this.jwtService.sign(payload)
+  createRefreshToken(user: User) {
+    const payload = { sub: user.id }
+    const options = {
+      secret: this.configService.get('REFRESH_TOKEN_SECRET'),
+      expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRATION')
+    }
+    const refreshToken = this.jwtService.sign(payload, options)
     return refreshToken
   }
 
-  async signUp(signUpDto: SignUpDto) {
+  createPasswordResetToken(user: User) {
+    const payload = { sub: user.id }
+    const options = {
+      secret: this.configService.get('PASSWORD_RESET_TOKEN_SECRET'),
+      expiresIn: this.configService.get('PASSWORD_RESET_TOKEN_EXPIRATION')
+    }
+    const passwordResetToken = this.jwtService.sign(payload, options)
+    return passwordResetToken
+  }
+
+  async register(registerUserDto: RegisterUserDto) {
     try {
-      const user = this.userRepository.create(signUpDto)
+      const user = this.userRepository.create(registerUserDto)
+      const hashedPassword = await bcrypt.hash(registerUserDto.password, 10)
+      const refreshToken = this.createRefreshToken(user)
+      wrap(user).assign({ hashedPassword, refreshToken })
       await this.userRepository.persistAndFlush(user)
-      const accessToken = this.createAccessToken(user)
-      return { accessToken }
+
+      user.accessToken = this.createAccessToken(user)
+      console.log(user)
+      return user
     } catch (err) {
       throw err
     }
   }
 
-  async signIn(signInDto: SignInDto) {
+  async login(loginUserDto: LoginUserDto) {
     try {
-      const { email, password } = signInDto
+      const { email, password } = loginUserDto
       const user = await this.userRepository.findOne({ email })
       if (!user) return
-      const match = await bcrypt.compare(password, user.password)
-      // TODO-CHECK: how to put http exceptions on controller than on service layer?
-      if (!match) throw new BadRequestException('The password is wrong')
-      const accessToken = this.createAccessToken(user)
-      return { accessToken }
+
+      const match = await bcrypt.compare(password, user.hashedPassword)
+      if (!match) throw new BadRequestException('The password is incorrect')
+
+      const refreshToken = this.createRefreshToken(user)
+      wrap(user).assign({ refreshToken })
+      await this.userRepository.persistAndFlush(user)
+
+      user.accessToken = this.createAccessToken(user)
+      return user
     } catch (err) {
       throw err
     }
   }
 
-  async signOut(id: number) {
+  async logout(id: number, done: any) {
     try {
       const user = await this.userRepository.findOne(id)
       if (!user) return
-      // TODO: e.g. remove token from database
-      const accessToken = null
-      return { accessToken }
+
+      wrap(user).assign({ refreshToken: null })
+      await this.userRepository.persistAndFlush(user)
+      done()
     } catch (err) {
       throw err
+    }
+  }
+
+  async refresh(refreshToken: string) {
+    try {
+      const token = await this.jwtService.verifyAsync(refreshToken)
+      if (!token.sub)
+        throw new UnprocessableEntityException('The refresh token is invalid')
+
+      const user = await this.userRepository.findOne(token.sub)
+      if (!user || user.refreshToken !== refreshToken)
+        throw new UnprocessableEntityException('The refresh token is invalid')
+
+      user.accessToken = this.createAccessToken(user)
+      return user
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        throw new UnprocessableEntityException('The refresh token is expired')
+      } else {
+        throw new UnprocessableEntityException('The refresh token is invalid')
+      }
     }
   }
 
@@ -72,10 +123,41 @@ export class AuthService {
     try {
       const user = await this.userRepository.findOne(id)
       if (!user) return
-      // TODO: check password and throw error
-      const password = changePasswordDto.password
-      wrap(user).assign({ password })
+
+      const match = await bcrypt.compare(
+        changePasswordDto.password,
+        user.hashedPassword
+      )
+      if (!match) throw new BadRequestException('The password is incorrect')
+
+      const password = changePasswordDto.newPassword
+      const hashedPassword = await bcrypt.hash(password, 10)
+      wrap(user).assign({ hashedPassword })
       await this.userRepository.persistAndFlush(user)
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    try {
+      const { email } = forgotPasswordDto
+      const user = await this.userRepository.findOne({ email })
+      if (!user) return
+
+      const passwordResetToken = this.createPasswordResetToken(user)
+      wrap(user).assign({ passwordResetToken })
+      await this.userRepository.persistAndFlush(user)
+      return { passwordResetToken }
+    } catch (err) {
+      throw err
+    }
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    try {
+      console.log(resetPasswordDto)
+      // TODO:
     } catch (err) {
       throw err
     }

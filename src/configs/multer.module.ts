@@ -1,9 +1,9 @@
 import { Global, Module, BadRequestException } from '@nestjs/common'
 import { MulterModule as NestMulterModule } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
-import * as path from 'path'
-import * as fs from 'fs'
-import * as uuid from 'uuid'
+import path from 'path'
+import fs from 'fs'
+import uuid from 'uuid'
 import { ConfigService } from '@nestjs/config'
 import { ConfigModule } from './config.module'
 
@@ -15,7 +15,7 @@ import { ConfigModule } from './config.module'
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         limits: {
-          fileSize: configService.get('UPLOAD_MAX_FILESIZE') || 10485760 // 10MB
+          fileSize: configService.get('UPLOAD_MAX_FILESIZE')
         },
         fileFilter: (req: any, file: any, cb: any) => {
           if (file.mimetype.match(/\/(jpg|jpeg|png|gif|pdf|json)$/)) {

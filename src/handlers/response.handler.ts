@@ -1,4 +1,8 @@
-import { HttpException, HttpStatus } from '@nestjs/common'
+import {
+  HttpException,
+  HttpStatus,
+  UnprocessableEntityException
+} from '@nestjs/common'
 
 // NOTE: handle the result from a service at the controller level
 export async function handleResponse(service: any) {
@@ -14,7 +18,8 @@ export async function handleResponse(service: any) {
     return res
   } catch (err) {
     if (typeof err === 'string') {
-      throw new Error(err)
+      // throw new Error(err)
+      throw new UnprocessableEntityException(err)
     }
     throw err
   }

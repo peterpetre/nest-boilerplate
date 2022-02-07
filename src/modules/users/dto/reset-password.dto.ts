@@ -1,9 +1,11 @@
+import { IsString, IsNotEmpty } from 'class-validator'
 import { SameAs } from '@/decorators/same-as.decorator'
 import { PasswordProperty } from '../entities/user.entity'
 
-export class ChangePasswordDto {
-  @PasswordProperty()
-  password: string
+export class ResetPasswordDto {
+  @IsString()
+  @IsNotEmpty()
+  passwordResetToken: string
 
   @PasswordProperty()
   newPassword: string

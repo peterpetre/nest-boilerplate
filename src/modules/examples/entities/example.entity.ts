@@ -1,6 +1,5 @@
 import { applyDecorators } from '@nestjs/common'
 import { ApiProperty } from '@nestjs/swagger'
-import { Type } from 'class-transformer'
 import {
   IsInt,
   Min,
@@ -24,10 +23,9 @@ export function NameProperty() {
       description: 'An example of a name',
       example: 'Alice'
     }),
-    Type(() => String),
     IsString(),
     IsNotEmpty(),
-    Length(1, 13)
+    Length(3, 13)
   )
 }
 
@@ -37,15 +35,14 @@ export function NumberProperty() {
       description: 'An example of a number',
       example: 13
     }),
-    Type(() => Number),
     IsInt(),
     Min(1),
     IsOptional()
   )
 }
 
-@Entity({ tableName: 'example' })
-export class ExampleEntity extends BaseEntity {
+@Entity()
+export class Example extends BaseEntity {
   @NameProperty()
   @Property()
   name: string
@@ -62,7 +59,7 @@ export class ExampleEntity extends BaseEntity {
   [EntityRepositoryType]?: ExampleRepository
 }
 
-@Repository(ExampleEntity)
-export class ExampleRepository extends EntityRepository<ExampleEntity> {
+@Repository(Example)
+export class ExampleRepository extends EntityRepository<Example> {
   // ...custom methods
 }

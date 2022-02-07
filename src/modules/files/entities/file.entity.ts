@@ -107,8 +107,8 @@ export function Size() {
   )
 }
 
-@Entity({ tableName: 'file' })
-export class FileEntity extends BaseEntity {
+@Entity()
+export class File extends BaseEntity {
   @Fieldname()
   @Property()
   fieldname: string
@@ -144,7 +144,7 @@ export class FileEntity extends BaseEntity {
   [EntityRepositoryType]?: FileRepository
 }
 
-@Repository(FileEntity)
-export class FileRepository extends EntityRepository<FileEntity> {
+@Repository(File)
+export class FileRepository extends EntityRepository<File> {
   // ...custom methods
 }

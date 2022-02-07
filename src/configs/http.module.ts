@@ -10,8 +10,8 @@ import { ConfigModule } from './config.module'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        timeout: configService.get('HTTP_TIMEOUT') || 5000,
-        maxRedirects: configService.get('HTTP_MAX_REDIRECTS') || 5
+        timeout: configService.get('HTTP_TIMEOUT'),
+        maxRedirects: configService.get('HTTP_MAX_REDIRECTS')
       })
     })
   ],

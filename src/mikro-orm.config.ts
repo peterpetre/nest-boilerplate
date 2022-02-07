@@ -1,17 +1,18 @@
 import { Options } from '@mikro-orm/core'
 import { Logger } from '@nestjs/common'
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter'
-import * as path from 'path'
+import { DefaultConfig } from './default.config'
+import path from 'path'
 
 const logger = new Logger('MikroORM')
 
 const config = {
   type: 'mysql',
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USERNAME || 'root',
-  password: process.env.DB_PASSWORD || 'root',
-  dbName: process.env.DB_NAME || 'main',
+  host: process.env.DB_HOST || DefaultConfig.DB_HOST,
+  port: process.env.DB_PORT || DefaultConfig.DB_PORT,
+  user: process.env.DB_USERNAME || DefaultConfig.DB_USERNAME,
+  password: process.env.DB_PASSWORD || DefaultConfig.DB_PASSWORD,
+  dbName: process.env.DB_NAME || DefaultConfig.DB_NAME,
   debug: true,
   highlighter: new SqlHighlighter(),
   logger: logger.log.bind(logger),

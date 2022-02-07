@@ -3,7 +3,7 @@ import { MikroORM } from '@mikro-orm/core'
 import { MikroOrmModule } from '@mikro-orm/nestjs'
 import config from '@/mikro-orm.config'
 // import { createExample } from './common/create-example'
-import { UserEntity } from './entities/user.entity'
+import { User } from './entities/user.entity'
 import { UsersController } from './users.controller'
 import { UsersService } from './users.service'
 
@@ -15,7 +15,7 @@ describe('UsersController', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         MikroOrmModule.forRoot(config),
-        MikroOrmModule.forFeature({ entities: [UserEntity] })
+        MikroOrmModule.forFeature({ entities: [User] })
       ],
       controllers: [UsersController],
       providers: [UsersService]

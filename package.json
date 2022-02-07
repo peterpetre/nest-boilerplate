@@ -26,7 +26,7 @@
     "kill:docker": "docker-compose rm -fsv",
     "initial:db-migrations": "mikro-orm migration:create --initial",
     "create:db-migrations": "mikro-orm migration:create",
-    "update:db-migrations": "mikro-orm migration:up",
+    "up:db-migrations": "mikro-orm migration:up",
     "bump:db-migrations": "mikro-orm migration:create && mikro-orm migration:up"
   },
   "dependencies": {

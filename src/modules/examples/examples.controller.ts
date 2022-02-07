@@ -12,7 +12,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { ApiResponseCommon } from '@/decorators/api-response-common.decorator'
 import { handleResponse } from '@/handlers/response.handler'
 import { ExamplesService } from './examples.service'
-import { ExampleEntity } from './entities/example.entity'
+import { Example } from './entities/example.entity'
 import { CreateExampleDto } from './dto/create-example.dto'
 import { UpdateExampleDto } from './dto/update-example.dto'
 
@@ -26,7 +26,7 @@ export class ExamplesController {
   @ApiResponse({
     status: 201,
     description: 'The example has been successfully created',
-    type: ExampleEntity
+    type: Example
   })
   @ApiResponseCommon()
   @Post('crud')
@@ -38,7 +38,7 @@ export class ExamplesController {
   @ApiResponse({
     status: 200,
     description: 'Return all examples',
-    type: [ExampleEntity]
+    type: [Example]
   })
   @ApiResponseCommon()
   @Get('crud')
@@ -50,7 +50,7 @@ export class ExamplesController {
   @ApiResponse({
     status: 200,
     description: 'Return the example',
-    type: ExampleEntity
+    type: Example
   })
   @ApiResponseCommon()
   @Get('crud/:id')
@@ -62,7 +62,7 @@ export class ExamplesController {
   @ApiResponse({
     status: 201,
     description: 'The example has been successfully updated',
-    type: ExampleEntity
+    type: Example
   })
   @ApiResponseCommon()
   @Patch('crud/:id')
@@ -76,7 +76,7 @@ export class ExamplesController {
   @ApiResponse({
     status: 201,
     description: 'The example has been successfully removed',
-    type: ExampleEntity
+    type: Example
   })
   @ApiResponseCommon()
   @Delete('crud/:id')

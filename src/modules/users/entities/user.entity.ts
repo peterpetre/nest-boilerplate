@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common'
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiHideProperty } from '@nestjs/swagger'
 import {
   Entity,
   Property,
@@ -7,11 +7,9 @@ import {
   EntityRepositoryType,
   EntityRepository,
   Unique,
-  BeforeCreate,
-  BeforeUpdate,
   OneToOne
 } from '@mikro-orm/core'
-import { Type } from 'class-transformer'
+import { Exclude } from 'class-transformer'
 import {
   IsString,
   IsEmail,
@@ -20,10 +18,9 @@ import {
   MaxLength
   // Matches
 } from 'class-validator'
-import bcrypt from 'bcrypt'
 import { BaseEntity } from '@/common/base.entity'
 import { Role } from '@/common/user.common'
-import { FileEntity } from '@/modules/files/files.module'
+import { File } from '@/modules/files/files.module'
 
 export function EmailProperty() {
   return applyDecorators(
@@ -31,7 +28,7 @@ export function EmailProperty() {
       description: 'The email of a user',
       example: 'user@example.com'
     }),
-    Type(() => String),
+    // Type(() => String),
     IsString(),
     IsNotEmpty(),
     IsEmail()
@@ -44,7 +41,7 @@ export function PasswordProperty() {
       description: 'The password of a user',
       example: 'user'
     }),
-    Type(() => String),
+    // Type(() => String),
     IsString(),
     IsNotEmpty(),
     MinLength(4),
@@ -55,8 +52,8 @@ export function PasswordProperty() {
   )
 }
 
-@Entity({ tableName: 'user' })
-export class UserEntity extends BaseEntity {
+@Entity()
+export class User extends BaseEntity {
   @EmailProperty()
   @Property()
   @Unique()
@@ -73,23 +70,27 @@ export class UserEntity extends BaseEntity {
   // password: string
 
   @Property()
-  password: string
+  @Exclude()
+  @ApiHideProperty()
+  hashedPassword: string
 
-  @BeforeCreate()
-  @BeforeUpdate()
-  async hashPassword() {
-    if (this.password) {
-      this.password = await bcrypt.hash(this.password, 10)
-    }
-  }
+  @Property({ nullable: true })
+  @Exclude()
+  @ApiHideProperty()
+  passwordResetToken: string
 
-  @OneToOne({ entity: () => FileEntity, nullable: true, orphanRemoval: true })
-  avatar?: FileEntity;
+  accessToken: string
+
+  @Property({ nullable: true })
+  refreshToken: string
+
+  @OneToOne({ entity: () => File, nullable: true, orphanRemoval: true })
+  avatar?: File;
 
   [EntityRepositoryType]?: UserRepository
 }
 
-@Repository(UserEntity)
-export class UserRepository extends EntityRepository<UserEntity> {
+@Repository(User)
+export class UserRepository extends EntityRepository<User> {
   // ...custom methods
 }

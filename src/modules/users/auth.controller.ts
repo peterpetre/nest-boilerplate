@@ -1,14 +1,24 @@
-import { Controller, Body, Post, VERSION_NEUTRAL } from '@nestjs/common'
+import {
+  Controller,
+  Body,
+  Post,
+  Patch,
+  VERSION_NEUTRAL,
+  Request
+} from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { ApiResponseCommon } from '@/decorators/api-response-common.decorator'
 import { handleResponse } from '@/handlers/response.handler'
 import { AuthGuard } from '@/guards/auth.guard'
-import { User } from '@/decorators/user.decorator'
+import { CurrentUser } from '@/decorators/current-user.decorator'
 import { AuthService } from './auth.service'
-import { UserEntity } from './entities/user.entity'
-import { SignUpDto } from './dto/sign-up.dto'
-import { SignInDto } from './dto/sign-in.dto'
+import { User } from './entities/user.entity'
+import { RegisterUserDto } from './dto/register-user.dto'
+import { LoginUserDto } from './dto/login-user.dto'
+import { RefreshTokenDto } from './dto/refresh-token.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
+import { ForgotPasswordDto } from './dto/forgot-password.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
 
 @ApiTags('auth')
 @Controller({
@@ -21,61 +31,95 @@ export class AuthController {
   @ApiOperation({ summary: 'Register a new account' })
   @ApiResponse({
     status: 201,
-    description: 'The user has been successfully signed up',
-    type: UserEntity
+    description: 'You have been successfully registered',
+    type: User
   })
   @ApiResponseCommon()
-  @Post('signup')
-  signup(@Body() signUp: SignUpDto) {
-    return handleResponse(() => this.authService.signUp(signUp))
+  @Post('register')
+  register(@Body() registerUserDto: RegisterUserDto) {
+    return handleResponse(() => this.authService.register(registerUserDto))
   }
 
-  @ApiOperation({ summary: 'Log in with your existing account' })
+  @ApiOperation({ summary: 'Log-in with your existing account' })
   @ApiResponse({
     status: 201,
-    description: 'The user has been successfully signed in',
-    type: UserEntity
+    description: 'You have been successfully logged in',
+    type: User
   })
   @ApiResponseCommon()
-  @Post('signin')
-  signin(@Body() signIn: SignInDto) {
-    return handleResponse(() => this.authService.signIn(signIn))
+  @Post('login')
+  login(@Body() loginUserDto: LoginUserDto) {
+    return handleResponse(() => this.authService.login(loginUserDto))
   }
 
-  @ApiOperation({ summary: 'Log out from your account' })
+  @ApiOperation({ summary: 'Log-out from your account' })
   @ApiResponse({
     status: 201,
-    description: 'The user has been successfully signed out',
-    type: UserEntity
+    description: 'You have been successfully logged out'
   })
   @ApiResponseCommon()
-  @Post('signout')
+  @Post('logout')
   @AuthGuard()
-  signout(@User() user: UserEntity) {
-    // TEST:
-    return handleResponse(() =>
-      user ? this.authService.signOut(user.id) : null
+  async logout(@Request() req: any, @CurrentUser() user: User) {
+    return this.authService.logout(user.id, () =>
+      req.res.setHeader('Authorization', null)
     )
   }
 
-  // TODO: validate / authenticate
+  @ApiOperation({ summary: 'Refresh your access token' })
+  @ApiResponse({
+    status: 201,
+    description: 'Your access token has been successfully refreshed',
+    type: User
+  })
+  @ApiResponseCommon()
+  @Post('refresh')
+  refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return handleResponse(() =>
+      this.authService.refresh(refreshTokenDto.refreshToken)
+    )
+  }
 
   @ApiOperation({ summary: 'Change your password' })
   @ApiResponse({
     status: 201,
-    description: 'The user has been successfully changed the password',
-    type: UserEntity
+    description: 'Your password has been successfully changed'
   })
   @ApiResponseCommon()
-  @Post('change-password')
+  @Patch('change-password')
   @AuthGuard()
   changePassword(
-    @User() user: UserEntity,
+    @CurrentUser() user: User,
     @Body() changePasswordDto: ChangePasswordDto
   ) {
-    console.log(changePasswordDto)
     return handleResponse(() =>
       this.authService.changePassword(user.id, changePasswordDto)
+    )
+  }
+
+  @ApiOperation({ summary: 'Create a password reset token' })
+  @ApiResponse({
+    status: 201,
+    description: 'The password reset token has been successfully created'
+  })
+  @ApiResponseCommon()
+  @Patch('forgot-password')
+  forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return handleResponse(() =>
+      this.authService.forgotPassword(forgotPasswordDto)
+    )
+  }
+
+  @ApiOperation({ summary: 'Reset your password' })
+  @ApiResponse({
+    status: 201,
+    description: 'The password has been successfully reseted'
+  })
+  @ApiResponseCommon()
+  @Patch('reset-password')
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return handleResponse(() =>
+      this.authService.resetPassword(resetPasswordDto)
     )
   }
 }

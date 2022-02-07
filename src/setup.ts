@@ -1,6 +1,7 @@
 import { NestExpressApplication } from '@nestjs/platform-express'
+import { Reflector } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { VersioningType } from '@nestjs/common'
+import { VersioningType, ClassSerializerInterceptor } from '@nestjs/common'
 // import { AsyncApiDocumentBuilder, AsyncApiModule } from 'nestjs-asyncapi'
 import helmet from 'helmet'
 import cors from 'cors'
@@ -42,7 +43,7 @@ function setupNest(app: NestExpressApplication) {
     defaultVersion: '1'
   })
   // https://docs.nestjs.com/faq/request-lifecycle#summary
-  app.useGlobalInterceptors()
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
   app.useGlobalPipes(new ValidationPipe(), new TrimPipe(), new IDPipe())
   app.useGlobalFilters(new ExceptionFilter())
 }

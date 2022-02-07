@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer'
+// import { Type } from 'class-transformer'
 import { IsDate } from 'class-validator'
 import { PrimaryKey, Property } from '@mikro-orm/core'
 import { ID } from '@/decorators/id.decorator'
@@ -8,12 +8,12 @@ export abstract class BaseEntity {
   @PrimaryKey()
   id: number
 
-  @Type(() => Date)
+  // @Type(() => Date)
   @IsDate()
   @Property()
   createdAt: Date = new Date()
 
-  @Type(() => Date)
+  // @Type(() => Date)
   @IsDate()
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
