@@ -75,9 +75,7 @@ export class AuthController {
   @ApiResponseCommon()
   @Post('refresh')
   refresh(@Body() refreshTokenDto: RefreshTokenDto) {
-    return handleResponse(() =>
-      this.authService.refresh(refreshTokenDto.refreshToken)
-    )
+    return handleResponse(() => this.authService.refresh(refreshTokenDto))
   }
 
   @ApiOperation({ summary: 'Change your password' })

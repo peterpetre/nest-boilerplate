@@ -11,6 +11,7 @@ import bcrypt from 'bcrypt'
 import { UserRepository, User } from './entities/user.entity'
 import { RegisterUserDto } from './dto/register-user.dto'
 import { LoginUserDto } from './dto/login-user.dto'
+import { RefreshTokenDto } from './dto/refresh-token.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
 import { ForgotPasswordDto } from './dto/forgot-password.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
@@ -29,30 +30,43 @@ export class AuthService {
     return accessToken
   }
 
-  createRefreshToken(user: User) {
-    const payload = { sub: user.id }
-    const options = {
+  getRefreshTokenOptions() {
+    return {
       secret: this.configService.get('REFRESH_TOKEN_SECRET'),
       expiresIn: this.configService.get('REFRESH_TOKEN_EXPIRATION')
     }
-    const refreshToken = this.jwtService.sign(payload, options)
+  }
+
+  createRefreshToken(user: User) {
+    const payload = { sub: user.id }
+    const refreshToken = this.jwtService.sign(
+      payload,
+      this.getRefreshTokenOptions()
+    )
     return refreshToken
+  }
+
+  getPasswordResetTokenOptions() {
+    return {
+      secret: this.configService.get('PASSWORD_RESET_TOKEN_SECRET'),
+      expiresIn: this.configService.get('PASSWORD_RESET_TOKEN_EXPIRATION')
+    }
   }
 
   createPasswordResetToken(user: User) {
     const payload = { sub: user.id }
-    const options = {
-      secret: this.configService.get('PASSWORD_RESET_TOKEN_SECRET'),
-      expiresIn: this.configService.get('PASSWORD_RESET_TOKEN_EXPIRATION')
-    }
-    const passwordResetToken = this.jwtService.sign(payload, options)
+    const passwordResetToken = this.jwtService.sign(
+      payload,
+      this.getPasswordResetTokenOptions()
+    )
     return passwordResetToken
   }
 
   async register(registerUserDto: RegisterUserDto) {
     try {
+      const { password } = registerUserDto
       const user = this.userRepository.create(registerUserDto)
-      const hashedPassword = await bcrypt.hash(registerUserDto.password, 10)
+      const hashedPassword = await bcrypt.hash(password, 10)
       const refreshToken = this.createRefreshToken(user)
       wrap(user).assign({ hashedPassword, refreshToken })
       await this.userRepository.persistAndFlush(user)
@@ -69,7 +83,7 @@ export class AuthService {
     try {
       const { email, password } = loginUserDto
       const user = await this.userRepository.findOne({ email })
-      if (!user) return
+      if (!user) throw new BadRequestException("The email doesn't exist")
 
       const match = await bcrypt.compare(password, user.hashedPassword)
       if (!match) throw new BadRequestException('The password is incorrect')
@@ -98,9 +112,13 @@ export class AuthService {
     }
   }
 
-  async refresh(refreshToken: string) {
+  async refresh(refreshTokenDto: RefreshTokenDto) {
     try {
-      const token = await this.jwtService.verifyAsync(refreshToken)
+      const { refreshToken } = refreshTokenDto
+      const token = await this.jwtService.verifyAsync(
+        refreshToken,
+        this.getRefreshTokenOptions()
+      )
       if (!token.sub)
         throw new UnprocessableEntityException('The refresh token is invalid')
 
@@ -111,16 +129,18 @@ export class AuthService {
       user.accessToken = this.createAccessToken(user)
       return user
     } catch (err) {
-      if (err instanceof TokenExpiredError) {
-        throw new UnprocessableEntityException('The refresh token is expired')
-      } else {
-        throw new UnprocessableEntityException('The refresh token is invalid')
-      }
+      throw err
+      // if (err instanceof TokenExpiredError) {
+      //   throw new UnprocessableEntityException('The refresh token is expired')
+      // } else {
+      //   throw new UnprocessableEntityException('The refresh token is invalid')
+      // }
     }
   }
 
   async changePassword(id: number, changePasswordDto: ChangePasswordDto) {
     try {
+      const { newPassword } = changePasswordDto
       const user = await this.userRepository.findOne(id)
       if (!user) return
 
@@ -130,8 +150,7 @@ export class AuthService {
       )
       if (!match) throw new BadRequestException('The password is incorrect')
 
-      const password = changePasswordDto.newPassword
-      const hashedPassword = await bcrypt.hash(password, 10)
+      const hashedPassword = await bcrypt.hash(newPassword, 10)
       wrap(user).assign({ hashedPassword })
       await this.userRepository.persistAndFlush(user)
     } catch (err) {
@@ -143,7 +162,7 @@ export class AuthService {
     try {
       const { email } = forgotPasswordDto
       const user = await this.userRepository.findOne({ email })
-      if (!user) return
+      if (!user) throw new BadRequestException("The email doesn't exist")
 
       const passwordResetToken = this.createPasswordResetToken(user)
       wrap(user).assign({ passwordResetToken })
@@ -157,7 +176,23 @@ export class AuthService {
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     try {
       console.log(resetPasswordDto)
-      // TODO:
+      const { passwordResetToken, newPassword } = resetPasswordDto
+
+      const token = await this.jwtService.verifyAsync(
+        passwordResetToken,
+        this.getPasswordResetTokenOptions()
+      )
+      if (!token.sub)
+        throw new UnprocessableEntityException('The refresh token is invalid')
+
+      const user = await this.userRepository.findOne(token.sub)
+      if (!user || user.passwordResetToken !== passwordResetToken)
+        throw new UnprocessableEntityException('The refresh token is invalid')
+
+      // CHECK: should i compare if new password is the same old?
+      const hashedPassword = await bcrypt.hash(newPassword, 10)
+      wrap(user).assign({ hashedPassword, passwordResetToken: null })
+      await this.userRepository.persistAndFlush(user)
     } catch (err) {
       throw err
     }
